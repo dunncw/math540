@@ -115,6 +115,9 @@ house <- read.csv('/Users/cindydunn/Desktop/Grad_School/math540/SLR_MLR_regressi
 mlr <- lm(price ~ sqft + factor(view) , data=house) # fit MLR model
 summary(mlr) # summary of MLR model
 
+# relevel the factor so that the reference level is the lowest level
+# the reference level is the level that is dropped from the model
+# the reference level is dropped because it is not needed to estimate the model parameters for the other levels of the factor
 mlr <- lm(price ~ sqft + relevel(factor(view), ref = "wood") , data=house)
 summary(mlr)
 
