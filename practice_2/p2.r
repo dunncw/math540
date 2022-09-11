@@ -19,7 +19,7 @@ mlr
 
 # equation of the fitted line
 mlr$coefficients
-# mpg_hat_subI = 57258.9362 + 544.1261*sqft + -718254.9177*factor(view)mountain + -761526.7811*factor(view)wood
+# y_hat_subI = 57258.9362 + 544.1261*sqft + -718254.9177*factor(view)mountain + -761526.7811*factor(view)wood
 
 #q2
 # Which variables have significant linear association with the response
@@ -59,7 +59,7 @@ round(predict(mlr, x0), digits = 4) # predict response for given value of x and 
 #Report the residual standard error of the fitted model.
 summary(mlr)
 #answer
-#2.794
+#2.7940
 
 #q7
 #Use the fitted model to make prediction on the test data and report the RMSE
@@ -68,3 +68,39 @@ RMSE <- sqrt(mean((y_hat - test.data$y)^2)) # calculate RMSE
 round(RMSE, digits = 4) # round to 4 digits
 #answer
 # 3.5518
+
+#q8 
+#Set seed = 0. Regress y on all regressors using 5-fold cross validation approach. Use the fitted model to make prediction on the test data and report the RMSE.
+Dat <- prop_val_df 
+# Set seed
+RNGkind (sample.kind = "Rounding")
+set.seed(0) ## set seed so that you get same partition each time
+p2 <- partition.2(Dat, 0.7) ## creating 70:30 partition
+training.data <- p2$data.train
+test.data <- p2$data.test
+
+# use the train function in package caret for cross validation and loocv 
+library(caret)
+RNGkind (sample.kind = "Rounding") 
+set.seed(O)
+# specify the sampling method as 5-folds cross validation
+train_control <- trainControl(method = "cv", 
+                              number = 5) 
+# Fit K-fold CV model  
+mlr_kcv <- train(y ~ ., data = training.data,  
+                 method = "lm", trControl = train_control) 
+
+# Make prediction on test data
+yhat_test = predict(mlr_kcv,test.data)
+RMSE_test = sqrt(mean((test.data$y - yhat_test)^2))
+round(RMSE_test, digits = 4)
+#answer
+#3.5518
+
+#q9
+#Report the final model obtained from 5-fold cross validation approach.
+#can use this to get the coefficients
+mlr_kcv$finalModel
+
+#answer( its the same as q1 answer so idk if its right) 
+# y_hat_subi = 22.3817 + 1.0318 * x1 + 9.9967 * x2 + 0.2840 * x3 + 2.3971 *x4 + 0.7773* x5 + -2.8460 * x6 + 2.7992 * x7 + -0.1298 * x9 + 4.9929 * x9
