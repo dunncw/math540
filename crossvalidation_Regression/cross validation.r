@@ -30,7 +30,7 @@ set.seed(O)
 # specify the sampling method as 5-folds cross validation
 train_control <- trainControl(method = "cv", 
                               number = 5) 
-# Fit K-fold CV model  
+# Fit K-fold CV model
 mlr_kcv <- train(mpg ~ ., data = training.data,  
                  method = "lm", trControl = train_control) 
 print(mlr_kcv)
