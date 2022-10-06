@@ -1,0 +1,105 @@
+---
+title: "Practice 2"
+output: pdf_document
+---
+
+
+```{r, warning=FALSE}
+Dat <- read.csv("~/Desktop/teaching 2022 fall/Math 540&440 statistical learning/yang/datasets/property_valuation.csv")
+source("~/Desktop/teaching 2022 fall/Math 540&440 statistical learning/yang/R files/myfunctions.R")
+
+RNGkind (sample.kind = "Rounding")
+set.seed(0) ## set seed so that you get same partition each time
+p2 <- partition.2(Dat, 0.7) ## creating 70:30 partition
+training.data <- p2$data.train
+test.data <- p2$data.test
+```
+
+
+
+# Q1
+The fitted regression line is $y = 22.3817 + 1.0317x_1 +9.9967x_2 +0.2840x_3 +2.3971x_4 +0.7773x_5 -2.8460x_6 +2.7992x_7 -0.1298x_8 +4.9929x_9$
+
+```{r}
+## Fit MLR model
+mlr <- lm(y ~ ., data = training.data)
+mlr$coefficients
+```
+
+# Q2
+At confidence level $(1-\alpha)= 0.95$, all confidence intervals include 0. So none of the variables have significant linear association with the response.
+```{r}
+confint(mlr,level = 0.95)
+```
+
+# Q3
+Variables $x_6$ and $x_7$ have the strongest correlation $cor(x_6,x_7)=0.85$.
+```{r}
+## Check correlation
+cor(training.data)
+# load package
+library(ggstatsplot)
+library(ggcorrplot)
+# correlation plot, highlight the variables that are most (positively and negatively) correlated.
+ggstatsplot::ggcorrmat(
+  data = training.data,
+  type = "parametric", # parametric for Pearson, nonparametric for Spearman's correlation
+  colors = c("darkred", "white", "steelblue") # change default colors
+)
+```
+
+# Q4
+The model suffers from multicollinearity, since VIF for variable x6 is greater than 10.
+```{r}
+library(car)
+vif(mlr)
+```
+
+# Q5
+$\hat{y} = 28.1342$
+```{r}
+x0 <- data.frame(x1=5, x2=1, x3=5, x4=1, x5=0, x6=6, x7=3, x8=35, x9=0)
+## prediction for mean response ##
+predict(mlr, x0)
+```
+
+# Q6
+Residual standard error is 2.794 on 7 degrees of freedom.
+```{r}
+summary(mlr)
+```
+
+# Q7
+$RMSE_{test} = 3.5518$
+```{r}
+# prediction on test data
+yhat = predict(mlr, newdata=data.frame(test.data))
+# RMSE for test data
+error.test <-  test.data$y - yhat
+rmse.test <- sqrt(mean(error.test^2))
+rmse.test
+```
+
+# Q8
+$RMSE_{test} = 3.5518$
+```{r}
+library(caret)
+# Fit 5-fold CV model 
+set.seed(0)
+train_control <- trainControl(method = "cv", number = 5) 
+mlr_kcv <- train(y ~ ., data = training.data,  
+                 method = "lm", trControl = train_control) 
+# prediction on test data using kcv model
+yhat = predict(mlr_kcv$finalModel, newdata=data.frame(test.data))
+# RMSE for test data
+error.test <-  test.data$y - yhat
+rmse.test <- sqrt(mean(error.test^2))
+rmse.test
+```
+
+
+# Q9
+The fitted regression line is $y = 22.3817 + 1.0317x_1 +9.9967x_2 +0.2840x_3 +2.3971x_4 +0.7773x_5 -2.8460x_6 +2.7992x_7 -0.1298x_8 +4.9929x_9$
+```{r}
+mlr_kcv$finalModel
+```

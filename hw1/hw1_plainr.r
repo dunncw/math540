@@ -1,0 +1,229 @@
+#get data
+b_housing <- read.csv("/Users/cindydunn/Desktop/Grad_School/math540/hw1/data/BostonHousing.csv")
+attach(b_housing)
+
+## Include the functions required for data partitioning
+source("/Users/cindydunn/Desktop/Grad_School/math540/Variable_Selection/myfunctions copy.r")
+
+#remove the CAT.MDEV variable
+b_housing <- b_housing[,-14]
+
+# Create training validation test data
+RNGkind (sample.kind = "Rounding") 
+set.seed(123) ## set seed so that you get same partition each time
+p3 <- partition.3(b_housing, 0.6, 0.3) ## creating 60:30:10 partition
+training.data <- p3$data.train # training data
+validation.data <- p3$data.val # validation data
+test.data <- p3$data.test # test data
+
+#q1
+#Why should the data be partitioned into training and test sets? What will the training set be used for? What will the test set be used for?
+#The data should be partitioned into training and test sets to ensure that the model is not overfitting the data. The training set will be used to fit the model and the test set will be used to evaluate the model.
+
+#q2
+#Fit a multiple linear regression model to the median house price (MEDV) as a function of CRIM, CHAS and RM. Write the equation for predicting the median house price using the predictors in the model.
+fit1 <- lm(MEDV ~ CRIM + CHAS + RM, data = training.data)
+summary(fit1)
+
+#q3 
+#Using the estimated regression model, what median house price is predicted for a tract in the Boston area that does not bound the Charles river, has crime rate of 0.1, and where the average number of rooms per house is 6?
+predict(fit1, data.frame(CRIM = 0.1, CHAS = 0, RM = 6))
+
+#q4
+#Fit a linear regression model with all 12 predictors.
+fit2 <- lm(MEDV ~ ., data = training.data)
+
+#sub1
+#Report the Root mean square error of this model on test data.
+yhat_test = predict(fit2,test.data)
+RMSE_test = sqrt(mean((test.data$MEDV - yhat_test)^2))
+RMSE_test
+
+#Is multicollinearity a potential problem for this model?
+# Check multicollinearity
+library(car)
+vif(fit2)
+#Generally, VIF value > 4 is a matter of concern (VIF > 10 is definitely a matter of concern)
+#There are several predictors with VIF > 4, so multicollinearity is a potential problem for this model.
+
+#Compute the correlation table for the numerical predictors and search for highly correlated pairs.
+library(data.table)
+corMatrix <- cor(matrix(rnorm(100), 5))
+#look through the correlation table and find the highest pairwise correlation
+corList <- setDT(melt(cor(training.data)))[order(value)]
+#send an email to teacher what is cutoff value for high correlation
+#make a new subset of the data with only the highly correlated predictors
+highCorr <- corList[abs(value) > 0.6]
+#remove any rows where the predictors are the same
+#remove any rows where one of the predictors is MEDV
+highCorr <- highCorr[Var1 != Var2]
+highCorr <- highCorr[Var1 != "MEDV"]
+#remove any rows where the column 'value' is the same as another row 
+highCorr <- highCorr[!duplicated(value)]
+highCorr
+
+#sub2
+#Use stepwise regression with cross validation approach to reduce the
+#number of predictors. How many variables do you have in the final
+#model? Which variables are dropped? Report the RMSE of this model
+#on test data.
+
+library(caret)
+train_control <- trainControl(method = "cv", number = 5) # 5-fold cross validation
+step_kcv <- train(MEDV ~ ., data = training.data, method = "lmStepAIC", trControl = train_control) # stepwise regression with cross validation
+print(step_kcv)
+#this is the final model
+step_kcv$finalModel
+#how many variables do you have in the final model?
+#There are 10 variables in the final model.
+#Which variables are dropped?
+# DIS, AGE are dropped.
+
+# prediction on test data
+yhat.kcv = predict(step_kcv$finalModel, newdata=data.frame(test.data))
+# RMSE for test data
+error.test.kcv <- yhat.kcv - test.data$MEDV
+rmse.test.kcv <- sqrt(mean(error.test.kcv^2))
+rmse.test.kcv
+
+
+#sub3
+# Use lasso penalty to fit a regularized regression model with cross
+# validation approach. Do the same variables disappear as in stepwise
+# approach? Report the RMSE of this model on test data.
+
+
+library(glmnet)
+library(caret)
+set.seed(0)
+train_control <- trainControl(method="cv", number=10)
+glmnet.lasso <- train(MEDV~ ., data = training.data, method = "glmnet", trControl = train_control, tuneGrid = expand.grid(alpha = 1,lambda = seq(0.001,0.1,by = 0.001)))
+glmnet.lasso$bestTune # best lambda
+lasso.model <- coef(glmnet.lasso$finalModel, glmnet.lasso$bestTune$lambda)
+lasso.model # coefficients
+plot(glmnet.lasso)
+
+#report the RMSE of this model on test data
+#remove the predictor variable 
+yhat.lasso = predict(glmnet.lasso, s = glmnet.lasso$bestTune, newdata=data.frame(test.data))
+error.test.lasso <- yhat.lasso - test.data$MEDV
+rmse.test.lasso <- sqrt(mean(error.test.lasso^2))
+rmse.test.lasso
+
+#sub4
+# Compare the models obtained in the above three steps. Create lift charts
+# on test data for all models and comment on that.
+
+#mlr model
+# use this for getting Lift chart on test data
+library(gains)
+pred.prob.test_1 <- predict(fit2, newdata = test.data,type = "response")
+gain_1 <- gains(test.data$MEDV, pred.prob.test_1)
+gain_1
+# Plot Lift chart: Percent cumulative response
+x_1 <- c(0, gain_1$depth)
+pred.y_1 <- c(0, gain_1$cume.pct.of.total)
+avg.y_1 <- c(0, gain_1$depth/100)
+plot(x_1, pred.y_1, main = "Cumulative Lift Chart", xlab = "deciles", 
+     ylab = "Percent cumulative response", type = "l", col = "red", cex.lab = 1.5)
+lines(x_1, avg.y_1, type = "l")
+RMSE_test
+
+#stepwise regression with cross validation model
+# use this for getting Lift chart on test data
+library(gains)
+pred.prob.test_2 <- predict(step_kcv$finalModel, newdata = test.data,type = "response")
+gain_2 <- gains(test.data$MEDV, pred.prob.test_2)
+gain_2
+# Plot Lift chart: Percent cumulative response
+x_2 <- c(0, gain_2$depth)
+pred.y_2 <- c(0, gain_2$cume.pct.of.total)
+avg.y_2 <- c(0, gain_2$depth/100)
+plot(x_2, pred.y_2, main = "Cumulative Lift Chart", xlab = "deciles", 
+     ylab = "Percent cumulative response", type = "l", col = "red", cex.lab = 1.5)
+lines(x_2, avg.y_2, type = "l")
+rmse.test.kcv
+
+#lasso penalty with cross validation model
+# use this for getting Lift chart on test data
+library(gains)
+pred.prob.test_3 <- predict(glmnet.lasso, s = glmnet.lasso$bestTune , newdata = test.data)
+gain <- gains(test.data$MEDV, pred.prob.test_3)
+gain
+# Plot Lift chart: Percent cumulative response
+x <- c(0, gain$depth)
+pred.y <- c(0, gain$cume.pct.of.total)
+avg.y <- c(0, gain$depth/100)
+plot(x, pred.y, main = "Cumulative Lift Chart", xlab = "deciles", 
+     ylab = "Percent cumulative response", type = "l", col = "red", cex.lab = 1.5)
+lines(x, avg.y, type = "l")
+rmse.test.lasso
+
+#Part B
+## Include the functions required for data partitioning
+source("/Users/cindydunn/Desktop/Grad_School/math540/Variable_Selection/myfunctions copy.r")
+#get data
+b_housing_log <- read.csv("/Users/cindydunn/Desktop/Grad_School/math540/hw1/data/BostonHousing.csv")
+#remove variable 'MEDV' from the data
+b_housing_log <- b_housing_log[,-13]
+attach(b_housing_log)
+
+
+#q1
+# Partition the data into training, validation, and test data sets. Create a logistic
+# regression model on training data using all regressors and report the
+# performance of that model on test data. What is the effect on the odds of
+# houses having high median value when the per capita crime rate of a town is
+# increased by 0.1?
+
+RNGkind (sample.kind = "Rounding") 
+set.seed(000) ## set seed so that you get same partition each time
+p3 <- partition.3(b_housing_log, 0.6, 0.3) ## creating 60:30:10 partition
+training.data <- p3$data.train # training data
+validation.data <- p3$data.val # validation data
+test.data <- p3$data.test # test data
+
+# Create a logistic regression model on training data using all regressors and report the performance of that model on test data.
+fit3 <- glm(CAT..MEDV ~ ., data = training.data, family = "binomial")
+summary(fit3)
+
+# What is the effect on the odds of houses having high median value when the per capita crime rate of a town is increased by 0.1?
+fit3$coefficients
+exp(0.12306064*0.1)
+#the odds ratio of 1.012382 means the increase in the crime rate by 0.1 does not effect of odds of houses having high median value or that there or ever so slightly higher odds.
+
+#q2
+# Considering "1" as the important class, conduct a search for the best cut-off value with the objective of striking a balance between sensitivity and specificity. Report the performance of the optimal model found in this search.
+library(caret)
+pred.prob.val <- predict(fit3, newdata = validation.data,type = "response")
+# pred.y.val <- ifelse(pred.prob.val > 0.5, 1, 0)
+cutoff <- seq(0.1, 0.9, by = 0.05)
+cutoff_and_kappa_df <- data.frame(cutoff = cutoff, kappa =0, sensitivity = 0, specificity = 0)
+# make a new dataframe to store cutoff values and kappa values as well as sensitivity and specificity
+for (i in 1:length(cutoff)) {
+  pred.y.val <- ifelse(pred.prob.val > cutoff[i], 1, 0)
+  # store the kappa value for each cutoff value
+  cutoff_and_kappa_df[i,2] <- confusionMatrix(as.factor(pred.y.val), as.factor(validation.data$CAT..MEDV), positive = "1")$overall['Kappa']
+  # store the sensitivity value for each cutoff value
+    cutoff_and_kappa_df[i,3] <- confusionMatrix(as.factor(pred.y.val), as.factor(validation.data$CAT..MEDV), positive = "1")$byClass['Sensitivity']
+  # store the specificity value for each cutoff value
+  cutoff_and_kappa_df[i,4] <- confusionMatrix(as.factor(pred.y.val), as.factor(validation.data$CAT..MEDV), positive = "1")$byClass['Specificity']
+}
+# find the largest kappa value in the dataframe and the corresponding cutoff value
+cutoff_and_kappa_df[cutoff_and_kappa_df$kappa == max(cutoff_and_kappa_df$kappa),]
+#plot sensitivity and specificity and kappa values for each cutoff value
+# on the y axis plot from 0 to 1 and on the x axis have the cutoff values
+plot(cutoff_and_kappa_df$cutoff, cutoff_and_kappa_df$sensitivity, type = "l", col = "red", ylim = c(0,1), xlab = "cutoff", ylab = "metrics_value")
+lines(cutoff_and_kappa_df$cutoff, cutoff_and_kappa_df$sensitivity, type = "l", col = "blue")
+lines(cutoff_and_kappa_df$cutoff, cutoff_and_kappa_df$specificity, type = "l", col = "green")
+lines(cutoff_and_kappa_df$cutoff, cutoff_and_kappa_df$kappa, type = "l", col = "red")
+legend("topright", legend = c("kappa", "sensitivity", "specificity"), col = c("red", "blue", "green"), lty = 1, cex = 0.8)
+
+# a cuttoff of 0.3 would be the best in this case
+
+
+
+
+
+
+

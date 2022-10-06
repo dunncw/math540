@@ -1,0 +1,8 @@
+#part 1 question 4 subpart 4 
+all of my lift charts look that same have i done something wrong. also i cant get predict function to work on with this model what is the proper way
+to set it up as we havent see a lasso example in class yet.
+
+to see where professor showed lasso example in notes go to week-5 variable selection1 slide 20
+
+#part 2 question 2
+does it look like i did this question right me sensativity and speciftiy values for my models with different cuttoff are very bad.
