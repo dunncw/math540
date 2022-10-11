@@ -1,0 +1,24 @@
+.daylight .d2l-quiz-status-questions {
+	display: inline-block;
+}
+
+.daylight .d2l-quiz-status-questions .dco:first-child {
+	border: 1px solid #b1b9be; /* corundum */
+	border-radius: 6px;
+	padding: 8px 4px;
+}
+
+.daylight tr.d2l-quiz-status-questions img.d2l-quiz-status-unsaved,
+.daylight tr.d2l-quiz-status-questions.d2l-quiz-status-unsaved d2l-icon {
+	opacity: 0.3;
+}
+
+.daylight .d2l-quiz-status-questions .dco.d2l-quiz-status-info {
+	height: 1.5rem;
+	width: 1.5rem;
+	padding: 17px 4px;
+}
+
+#d2l_body {
+	overflow: auto;
+}

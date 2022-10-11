@@ -1,0 +1,101 @@
+﻿.daylight .d2l-quiz-navbar .dco_c {
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+	-ms-flex-flow: row wrap;
+	-webkit-flex-flow: row wrap;
+	flex-flow: row wrap;
+	align-items: center;
+}
+			
+.daylight .d2l-quiz-navbar {
+	margin-top: -20px;
+}
+
+.daylight .d2l-quiz-navbar-buttons {
+	flex: 1 0 auto;
+	-ms-flex: 1 0 auto;
+	-webkit-flex: 1 0 auto;
+	margin-top: 20px;
+}
+			
+.daylight .d2l-quiz-navbar label {
+	margin-top: 20px;
+}
+
+.daylight #d2l_form .d2l-quiz-status-unsaved {
+	opacity: .3;
+}
+
+@media(max-width: 993px) {
+	.daylight #d2l_form {
+		padding-left: calc(2.439% - 9px);
+		padding-right: calc(2.439% - 9px);
+	}
+}
+
+@media(max-width: 615px) {
+	.daylight #d2l_form {
+		padding-left: 9px;
+		padding-right: 9px;
+	}
+}
+
+.daylight .d2l-quiz-attempt-buttons {
+	margin-top: 20px;
+	margin-bottom: 20px;
+	padding-bottom: 120px; /* this rule is for fixing defect DE38161, where submit button was covered by safari tool bar */
+}
+.daylight .d2l-quiz-attempt-buttons button {
+	margin-bottom: 5px;
+}
+
+.d2l-save-status-container {
+	display: inline-block;
+	padding: 5px 5px 0 20px;
+	float: left;
+	height: 35px;
+}
+
+.d2l-question-header-container-retake-incorrect > div {
+	display: flex;
+	align-items: baseline;
+}
+
+.d2l-question-header-container-retake-incorrect > div > span.d2l-body-small {
+	margin: 0;
+}
+
+.d2l-question-header-incorrect-prev-icon {
+	margin-bottom: 7px;
+}
+
+.d2l-quiz-question-autosave-container {
+	clear: both;
+}
+
+.d2l-save-status-container d2l-button-icon {
+	position:relative;
+	margin-left: 95px;
+	top: -34px;
+}
+
+[dir="rtl"] .d2l-save-status-container d2l-button-icon {
+	margin-left: 0;
+	margin-right: 150px;
+}
+
+.d2l-question-navigation-container-retake-incorrect a.d2l-link {
+	font-weight: 600;
+	font-size: 0.7em;
+}
+
+.d2l-activity-question-container {
+	display: inline-block;
+	margin-right: 100%;
+}
+
+[dir="rtl"] .d2l-activity-question-container {
+	margin-left: 100%;
+	margin-right: 0%;
+}

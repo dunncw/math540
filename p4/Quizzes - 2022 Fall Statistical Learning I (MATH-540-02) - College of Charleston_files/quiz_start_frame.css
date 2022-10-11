@@ -1,0 +1,12 @@
+﻿.daylight iframe.d2l-navbar-margin {
+	margin-top: 11px;
+	max-width: 1170px;
+}
+
+@media(min-width:994px) {
+	.daylight .d2l-navbar-margin {
+		padding-left: 2.439%;
+		padding-right: 2.439%;
+		width: 97.561%;
+	}
+}

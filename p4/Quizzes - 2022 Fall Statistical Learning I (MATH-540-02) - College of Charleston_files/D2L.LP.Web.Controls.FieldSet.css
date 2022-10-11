@@ -1,0 +1,44 @@
+
+fieldset.dfs_m {
+	border: none 0;
+	padding: 0;
+	margin: 0;
+	display: inline;
+}
+
+
+legend.dfs_l,
+legend.dfs_l_f {
+	color: var(--d2l-color-ferrite);
+	padding: 0;
+	margin: 0;
+	border: none 0;
+}
+
+
+div.dfs_c, div.dfs_c_f  {
+	padding-top: 0.3em;
+}
+
+
+legend.dfs_l_f {
+	position: relative;
+	float: left;
+	text-align: right;
+	text-shadow: 0 1px 0 #FFFFFF;
+	white-space: normal !important;
+	font-weight: bold;
+}
+[dir="rtl"] legend.dfs_l_f {
+	float: right;
+	text-align: left;
+}
+
+
+div.dfs_c_f {
+	padding-top: 0;
+}
+
+div.dfs_c_f input[type="checkbox"] {
+	margin-right: 0.5rem;
+}
