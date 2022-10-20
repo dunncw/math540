@@ -1,0 +1,50 @@
+---
+title: "midterm_540"
+author: "cayden dunn"
+date: "2022-10-19"
+output: html_document
+---
+
+```{r}
+library(caret)
+wine <- read.csv("/Users/cindydunn/Desktop/Grad_School/math540/midterm/data/wine.csv")
+source("/Users/cindydunn/Desktop/Grad_School/math540/logistic_regression/myfunctions copy.r")
+```
+
+# type of problem
+this is a supervised classifciation problem. as we have examples of labeled data and that data is divided into two classes red and white wine. therefore i will be creating a logistic regression model.
+
+```{r}
+RNGkind (sample.kind = "Rounding")
+set.seed(0)
+p <- partition.2(wine, 0.7)
+training.data <- p$data.train
+test.data <- p$data.test
+
+logistic.model <- glm(Type~.,family=binomial(link='logit'),data=training.data)
+```
+
+## Perform variable selection using a method of your choice.
+going to start with backwards stepwise and see how that works. It seems that backwards step worked rather well it got rid of several predictors. 
+
+```{r}
+#backwards stepwise 
+step.model <- step(logistic.model)
+
+summary(step.model)
+```
+
+## Clearly show the steps of model building and report the main results of your analysis (including model evaluation) in a short paragraph.
+```{r}
+library(caret)
+pred.prob.test <- predict(step.model, newdata = test.data, type = "response")
+pred.y.test <- ifelse(pred.prob.test > 0.5, 1, 0)
+confusionMatrix(as.factor(pred.y.test), as.factor(test.data$Type), positive = "1")
+
+library(pROC)
+r <- roc(test.data$Type, pred.prob.test)
+plot.roc(r, main = "ROC curve")
+auc(r)
+```
+
+as we can see from the confusion matrix created on the test data the model preforms very well with a 99% accuracy. the Sensitivity : 0.9955, Specificity : 0.9938 and Kappa : 0.9892 values are also all very high as well so. These metrics as a result of running the model on novel test data means that the model generilzes well for this given data set and is very accurate. Also from the ROC curve graph we can see we have create a model that preformed nearly perfect on the novel test data with the area under the curve being 0.9958

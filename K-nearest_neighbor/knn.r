@@ -5,8 +5,8 @@ rm(list = ls())
 ##############################
 
 diabetes <- read.csv("/Users/cindydunn/Desktop/Grad_School/math540/K-nearest_neighbor/data/diabetes.csv")
-diabetes$Outcome <- as.factor(diabetes$Outcome)
-levels(diabetes$Outcome) <- c("no", "yes")
+diabetes$Outcome <- as.factor(diabetes$Outcome) # factor with 2 levels
+levels(diabetes$Outcome) <- c("no", "yes") # redefine levels
 
 ## Include the functions required for data partitioning
 source("/Users/cindydunn/Desktop/Grad_School/math540/K-nearest_neighbor/myfunctions copy.r")
@@ -20,12 +20,15 @@ validation.data <- p3$data.val
 test.data <- p3$data.test
 
 ### Rescale the data
-training.scaled <- scale(training.data[,-9], center = TRUE, scale = TRUE)
+#center is the mean of each column
+#scale is the standard deviation of each column
+# the -9 drops that coulmn from the dataframe
+training.scaled <- scale(training.data[,-9], center = TRUE, scale = TRUE) # exclude the response vairable from the data set for scaling
 training.scaled.wY <- cbind(training.scaled, training.data[,9])
 training.scaled.attr <- attributes(training.scaled)
 val.scaled <- scale(validation.data[,-9], 
                     center = training.scaled.attr$`scaled:center`, 
-                    scale = training.scaled.attr$`scaled:scale`)
+                    scale = training.scaled.attr$`scaled:scale`) # use training data's center and scale to scale the validation data
 test.scaled <- scale(test.data[,-9], 
                     center = training.scaled.attr$`scaled:center`, 
                     scale = training.scaled.attr$`scaled:scale`)
@@ -79,13 +82,15 @@ for (kk in 1:K){
 # create a plot for k vs. kappa
 plot(c(1:K), kappa, xlab = "k", ylab = "Kappa", type = "l", col = "blue")
 #dev.copy2pdf(file = "E:/Data mining/Lecture Notes/plots/knn_class1.pdf")
-
+which.max((kappa)) # the best k
+# we are looking for the largest kappa value
 
 ### fit k-nn model on test data with k=44
 training.data.all <- rbind(training.data, validation.data)
-training.data.scaled.all <- rbind(training.scaled, val.scaled)
-Knn <- knn(train = training.data.scaled.all, test = test.scaled,
-           cl = training.data.all[,9], k = 44)
+training.data.scaled <- scale(training.data.all[,-9], center = TRUE, scale = TRUE) # exclude the response vairable from the data set for scaling
+training.data.scaled.wY <- cbind(training.data.scaled, training.data.all[,9])
+Knn <- knn(train = training.data.scaled, test = test.scaled,
+           cl = training.data.all[,9], k = 42)
 confusionMatrix(as.factor(Knn), as.factor(test.data[,9]), 
                 positive = "yes")
 
