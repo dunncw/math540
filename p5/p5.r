@@ -1,3 +1,4 @@
+# Euclidean distance
 # Suppose the scores for midterm1, midterm2 and final for Student A are (80, 78, 85) and the same for Student C are (77, 80, 81). Find theEuclidean distance between Student A and Student C. Round to 4 places after decimal.
 # Student A are (80, 78, 85)
 #Student C are (77, 80, 81)
@@ -29,8 +30,8 @@ test.scaled <- scale(test.data[,-1],
 
 
 library(FNN)
-Knn <- knn(train = training.scaled, test = test.scaled,
-           cl = training.data[,1], k = 5)
+Knn <- knn.reg(train = training.scaled, test = test.scaled,
+           y = training.data[,1], k = 5)
 Knn
 
 library(caret)
@@ -63,6 +64,6 @@ newObs.scaled <- scale(newObs,
                     center = auto.scaled.attr$`scaled:center`, 
                     scale = auto.scaled.attr$`scaled:scale`)
 library(FNN)
-Knn <- knn(train = auto.scaled, test = newObs.scaled,
-           cl = autompg$mpg, k = 390)
+Knn <- knn.reg(train = auto.scaled, test = newObs.scaled,
+           y = autompg$mpg, k = 390)
 Knn
