@@ -43,7 +43,7 @@ for (kk in 1:K){
   c <- confusionMatrix(as.factor(Knn), as.factor(test.data[,13]), 
                        positive = "yes")
   kappa[kk] <- c$overall["Kappa"]
-  cat("K", kk, "Kappa", kappa[kk], "\n")
+  #cat("K", kk, "Kappa", kappa[kk], "\n")
 }
 
 # create a plot for k vs. kappa
@@ -65,8 +65,3 @@ confusionMatrix(as.factor(Knn), as.factor(test.data[,13]),
 # Specificity : 0.9881
 
 # B. Use the BostonHousing data to accomplish the following modeling tasks.
-
-
-
-
-
