@@ -69,6 +69,10 @@ which.max((kappa)) # the best k
 
 # 2. Evaluate the predictive performance of this model on the test data.
 
+Prediction no yes
+       no  83   3
+       yes  1  14
+
 Accuracy : 0.9604
 Sensitivity : 0.8235
 Specificity : 0.9881
@@ -161,8 +165,36 @@ Prediction no yes
 Accuracy : 0.9406 
 Sensitivity : 0.8824          
 Specificity : 0.9524
+Kappa : 0.7973 
 
 The model preforms well
+
+# C. Compare the performances of the two models that you built in this assignment.
+
+The models preform around the same with model 1(kNN) besting model two in overall model accuracy by a difference of 0.2. Besides this metric model 1 and two have varying scores for Sensitivity and Specificity. With model 1 being more specific and model 2 being more sensitive. However for this dataset both of the models perform very well and I would rule neither out as a method of analying/modeling the given dataset. And if I was forced to chose an approach that is best i would chose model 1. Model 1's kappa value is also siginifigantly better than model 2's kappa value and this is yet another reason to select model 1
+
+Model 1's performance 
+
+Prediction no yes
+       no  83   3
+       yes  1  14
+
+Accuracy : 0.9604
+Sensitivity : 0.8235
+Specificity : 0.9881
+Kappa : 0.8516 
+
+
+model 2's preformance
+
+Prediction no yes
+       no  80   2
+       yes  4  15
+
+Accuracy : 0.9406 
+Sensitivity : 0.8824          
+Specificity : 0.9524
+Kappa : 0.7973 
 
 
 
