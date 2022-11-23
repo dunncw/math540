@@ -1,7 +1,7 @@
-ebay <- read.csv("/Users/cindydunn/Desktop/Grad_School/math540/logistic_regression/eBayAuctions2.csv")
+ebay <- read.csv("/Users/cindydunn/Desktop/Grad_School/math540/pre_midterm/logistic_regression/eBayAuctions2.csv")
 
 ## Include the functions required for data partitioning
-source("/Users/cindydunn/Desktop/Grad_School/math540/logistic_regression/myfunctions copy.r")
+source("/Users/cindydunn/Desktop/Grad_School/math540/pre_midterm/logistic_regression/myfunctions copy.r")
 
 #########################################
 ## Create training and test data ##
