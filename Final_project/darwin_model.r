@@ -73,6 +73,85 @@ plot(x, pred.y, main = "Cumulative Lift Chart", xlab = "deciles",
 lines(x, avg.y, type = "l")
 
 ########################################################################################
+# lasso regression model
+library(caret)
+set.seed(0)
+train_control <- trainControl(method="cv", number=10)
+glmnet.lasso <- train(class ~ ., data = training.data, method = "glmnet",
+                      trControl = train_control, 
+                      tuneGrid = expand.grid(alpha = 1,lambda = seq(0.001,0.1,by = 0.001)))
+# glmnet.lasso <- train(mpg ~ ., data = training.data, method = "glmnet", 
+#                       trControl = train_control, 
+#                       tuneGrid = expand.grid(alpha = 1,lambda = lasso$lambda))
+glmnet.lasso 
+plot(glmnet.lasso)
+
+# best parameter
+glmnet.lasso$bestTune
+
+# best coefficient
+lasso.model <- coef(glmnet.lasso$finalModel, glmnet.lasso$bestTune$lambda)
+lasso.model
+
+# prediction on test data
+yhat.lasso <- predict(glmnet.lasso, s = glmnet.lasso$bestTune, test.data)
+# RMSE for test data
+error.test.lasso <- yhat.lasso - test.data$mpg
+rmse.test.lasso <- sqrt(mean(error.test.lasso^2))
+rmse.test.lasso
+
+# create a confusion matrix for test data
+confusionMatrix(yhat.lasso, test.data$class)
+
+pred.prob.test <- predict(glmnet.lasso, newdata = test.data, type = "prob")
+# create a lift chart
+# Create Lift chart ######### wont work for some reason????
+library(gains)
+#make the vector test.data$class numeric
+test.data$class <- as.numeric(test.data$class)
+# use this for getting Lift chart on test data
+gain <- gains(as.numeric(test.data$class), pred.prob.test)
+gain
+
+# Plot Lift chart: Percent cumulative response
+x <- c(0, gain$depth)
+pred.y <- c(0, gain$cume.pct.of.total)
+avg.y <- c(0, gain$depth/100)
+plot(x, pred.y, main = "Cumulative Lift Chart", xlab = "deciles", 
+     ylab = "Percent cumulative response", type = "l", col = "red", cex.lab = 1.5)
+lines(x, avg.y, type = "l")
+
+########################################################################################
+# ridge regression model
+library(caret)
+set.seed(0)
+library(glmnet)
+
+train_control <- trainControl(method="cv", number=10)
+glmnet.ridge <- train(class ~ ., data = training.data, method = "glmnet",
+                      trControl = train_control, 
+                      tuneGrid = expand.grid(alpha = 0,lambda = seq(0.001,0.1,by = 0.001)))
+glmnet.ridge 
+plot(glmnet.ridge)
+
+# best parameter
+glmnet.ridge$bestTune
+
+# best coefficient
+ridge.model <- coef(glmnet.ridge$finalModel, glmnet.ridge$bestTune$lambda)
+ridge.model
+
+# prediction on test data
+yhat.ridge <- predict(glmnet.ridge, s = glmnet.ridge$bestTune, test.data)
+# RMSE for test data
+error.test.ridge <- yhat.ridge - test.data$mpg
+rmse.test.ridge <- sqrt(mean(error.test.ridge^2))
+rmse.test.ridge
+
+# create a confusion matrix for test data
+confusionMatrix(yhat.ridge, test.data$class)
+
+########################################################################################
 # stepwise selection (does not work with our model atm)
 # things to google 
 
@@ -109,6 +188,14 @@ Knn_kcv2 <- train(class ~ ., data = training.data, method = "knn",
 print(Knn_kcv2)
 #what metric should be used for classification
 
+# create a lift chart
+library(gains)
+#make the vector test.data$class numeric
+test.data$class <- as.numeric(test.data$class)
+# use this for getting Lift chart on test data
+gain <- gains(as.numeric(test.data$class), pred.prob.test)
+gain
+
 ########################################################################################
 # Ensemble bagging approach
 library(caret)
@@ -120,6 +207,10 @@ bag <- train(class ~ . , data = training.data, method = "treebag",
                trControl = train_control, nbagg = 50)
 print(bag)
 plot(varImp(bag))
+#plot var importance using ggplot
+library(ggplot2)
+varImpPlot(bag, main = "Variable Importance Plot")
+
 #dev.copy2pdf(file = "E:/Data mining/Lecture Notes/plots/bag1.pdf")
 bag$finalModel
 
@@ -155,6 +246,13 @@ confusionMatrix(pred.test, test.data$class, positive = "P")
 library(gmodels)
 CrossTable(pred.test, test.data$class, prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE, dnn = c("Predicted", "Actual"))
 ###### include this table
+
+# create a lift chart
+library(gains)
+#make the vector test.data$class numeric
+test.data$class <- as.numeric(test.data$class)
+# use this for getting Lift chart on test data
+gain <- gains(as.numeric(test.data$class), pred.test)
 
 ########################################################################################
 # Adaboost
