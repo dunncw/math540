@@ -118,7 +118,7 @@ train_control <- trainControl(method="cv", number=10)
 ## specify nbagg to control the number of trees. default value is 25 
 bag <- train(class ~ . , data = training.data, method = "treebag",
              trControl = train_control, nbagg = 50)
-plot(varImp(bag))
+plot(varImp(bag),top = 30)
 
 #dev.copy2pdf(file = "E:/Data mining/Lecture Notes/plots/bag1.pdf")
 bag$finalModel
@@ -173,7 +173,7 @@ train_control <- trainControl(method="cv", number=10)
 ada <- train(class ~ . , data = training.data, method = "ada",
              trControl = train_control, tuneLength = 3)
 print(ada)
-plot(varImp(ada))
+plot(varImp(ada), top = 30)
 #dev.copy2pdf(file = "E:/Data mining/Lecture Notes/plots/ct3.pdf")
 #ada$finalModel
 
@@ -197,7 +197,7 @@ rf <- train(class ~ . , data = training.data, method = "rf",
 # rf <- train(Outcome ~ . , data = training.data, method = "rf", ntree = 50,
 #                trControl = train_control, tuneGrid = expand.grid(mtry = c(2,5,8)))
 print(rf)
-plot(varImp(rf))
+plot(varImp(rf), top = 30)
 #dev.copy2pdf(file = "E:/Data mining/Lecture Notes/plots/ct3.pdf")
 rf$finalModel
 
@@ -206,3 +206,53 @@ pred.test.rf = predict(rf$finalModel, test.data, type = 'class')
 
 # create confusion matrix
 confusionMatrix(pred.test.rf, test.data$class, positive = "1")
+
+########################################################################################
+# lasso regression model
+library(caret)
+set.seed(0)
+train_control <- trainControl(method="cv", number=10)
+glmnet.lasso <- train(class ~ ., data = training.data, method = "glmnet",
+                      trControl = train_control, 
+                      tuneGrid = expand.grid(alpha = 1,lambda = seq(0.001,0.1,by = 0.001)))
+# glmnet.lasso <- train(mpg ~ ., data = training.data, method = "glmnet", 
+#                       trControl = train_control, 
+#                       tuneGrid = expand.grid(alpha = 1,lambda = lasso$lambda))
+glmnet.lasso 
+plot(glmnet.lasso)
+
+# best parameter
+glmnet.lasso$bestTune
+
+# best coefficient
+lasso.model <- coef(glmnet.lasso$finalModel, glmnet.lasso$bestTune$lambda)
+lasso.model
+
+# prediction on test data
+yhat.lasso <- predict(glmnet.lasso, s = glmnet.lasso$bestTune, test.data)
+# RMSE for test data
+error.test.lasso <- yhat.lasso - test.data$mpg
+rmse.test.lasso <- sqrt(mean(error.test.lasso^2))
+rmse.test.lasso
+
+# create a confusion matrix for test data
+confusionMatrix(yhat.lasso, test.data$class)
+
+# create a lift chart
+library(gains)
+gain <- gains(as.numeric(test.data$class), as.numeric(yhat.lasso))
+
+
+########################################################################################
+# ridge regression model
+library(caret)
+set.seed(0)
+library(glmnet)
+
+train_control <- trainControl(method="cv", number=10)
+glmnet.ridge <- train(class ~ ., data = training.data, method = "glmnet",
+                      trControl = train_control, 
+                      tuneGrid = expand.grid(alpha = 0,lambda = seq(0.001,0.1,by = 0.001)))
+glmnet.ridge 
+plot(glmnet.ridge)
+
